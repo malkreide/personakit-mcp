@@ -1,0 +1,22 @@
+# .github/repo-meta.yml — von der github-repo Skill gepflegt
+repo_name: personakit-mcp
+title: personakit-mcp
+description: MCP server that serves personakit personas read-only to LLM sessions
+topics: [mcp, model-context-protocol, llm, personas, jobs-to-be-done, ux, python]
+project_type: mcp-server
+visibility: public
+license: MIT
+author_legal_name: Hayal Özkan
+author_label: Autor
+github_user: malkreide
+default_branch: main
+language: python
+version: 0.1.0
+pypi_package: personakit-mcp
+mcp_name: io.github.malkreide/personakit-mcp
+mcp_spec_version: 2026-07-28
+confirmed: true           # Design-Notiz mit Name, Description und Topics am 2026-10-07 bestätigt
+offen:
+  - topics (Backend B: kein MCP-Tool – Settings-UI oder später mit gh)
+  - Secret Scanning und Push Protection aktivieren (Backend B: Settings-UI oder gh)
+  - PyPI und MCP-Registry erst, wenn personakit auf PyPI ist (PyPI lehnt die Git-Abhängigkeit ab); dann publish.yml und Pending Publisher
