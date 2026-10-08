@@ -15,8 +15,7 @@ version: 0.1.0
 pypi_package: personakit-mcp
 mcp_name: io.github.malkreide/personakit-mcp
 mcp_spec_version: 2026-07-28
-confirmed: true           # Design-Notiz mit Name, Description und Topics am 2026-10-07 bestätigt
+confirmed: true           # Design-Notiz mit Name, Description und Topics am 2026-10-07 bestätigt; Topics, Secret Scanning und Push Protection am 2026-10-08 gesetzt
 offen:
-  - topics (Backend B: kein MCP-Tool – Settings-UI oder später mit gh)
-  - Secret Scanning und Push Protection aktivieren (Backend B: Settings-UI oder gh)
+  - Private vulnerability reporting aktivieren (Settings → Advanced Security) – SECURITY.md verlinkt auf security/advisories/new, das ohne diese Einstellung nicht funktioniert
   - PyPI und MCP-Registry erst, wenn personakit auf PyPI ist (PyPI lehnt die Git-Abhängigkeit ab); dann publish.yml und Pending Publisher
