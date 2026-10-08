@@ -1,0 +1,47 @@
+<!--
+  LLM evaluation for personakit-mcp (mcp-builder, phase 4).
+  Run against PERSONAKIT_DIR=tests/fixtures/personas (synthetic personas from personakit v0.2.0).
+  Every answer was verified with the tools on 2026-10-07; each needs more than one tool call.
+-->
+<evaluation>
+  <qa_pair>
+    <question>In the persona set for AI guidelines for teachers, one persona is primary. What priority does that persona's own file declare as its default?</question>
+    <answer>supplemental</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>What first name does the primary persona of the AI-guidelines set use when it is simulated?</question>
+    <answer>Mara</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>The primary persona of the set about school entry communication rests on an interview source. How many interviews does that source report?</question>
+    <answer>8</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Which evidence level does the negative persona of the school entry set have?</question>
+    <answer>proto</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>How many personas in the folder are both active and built on team assumptions only (evidence level proto)?</question>
+    <answer>1</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Which journey id does the primary persona of the school entry set link to?</question>
+    <answer>kindergarteneintritt-eltern</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Which persona id belongs to both sets and has the priority secondary in each of them?</question>
+    <answer>schulleitung-entscheidungsorientiert</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Which persona is due for review first (earliest review date)? Give its id.</question>
+    <answer>schulleitung-entscheidungsorientiert</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>How many versions are recorded in the changelog of the secondary persona of the AI-guidelines set?</question>
+    <answer>3</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Who owns the persona set whose status is draft?</question>
+    <answer>Pädagogik</answer>
+  </qa_pair>
+</evaluation>

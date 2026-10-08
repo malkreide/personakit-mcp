@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personakit-mcp"
+version = "0.1.0"
+description = "MCP server that serves personakit personas read-only to LLM sessions"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Hayal Özkan" }]
+keywords = ["mcp", "model-context-protocol", "personas", "jobs-to-be-done", "llm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+]
+dependencies = [
+  # First SDK major that speaks protocol 2026-07-28 (server/discover); mcp 1.x stops at 2025-11-25.
+  "mcp>=2.0,<3",
+  "pydantic>=2.12",
+  # personakit is not on PyPI yet, hence the Git pin – which also keeps personakit-mcp off PyPI for now
+  # (PyPI rejects direct URL dependencies; see .github/repo-meta.yml). v0.2.0 = 75f45e2, first with personakit.api.
+  "personakit @ git+https://github.com/malkreide/personakit@v0.2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+personakit-mcp = "personakit_mcp.server:main"
+
+[project.urls]
+Repository = "https://github.com/malkreide/personakit-mcp"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
