@@ -133,3 +133,103 @@ personakit-mcp/
 - **Fehler in Prompts:** Prompts kennen kein `isError`-Ergebnis. Erwartete Fehler (unbekannte ID, Konfiguration) gehen als JSON-RPC-Fehler `-32602` mit der Meldung hinaus, nicht als generischer `-32603`.
 - **Listen-Results:** Die Tools liefern Markdown als Text und das Modell als `structuredContent` (mit `outputSchema`); `ttlMs` und `cacheScope: public` auf `tools/list`, `prompts/list` und `server/discover`. `subscriptions/listen` wird nicht angeboten, weil es nichts zu melden gibt.
 - **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.3.0` (unverändert seit `v0.2.0`), weil das personakit-Paket die Beispiele nicht mitliefert.
+
+## 12 Entwurf: Probe-Tool (offen)
+
+Stand 2026-10-11 · Status: **Entwurf, nicht entschieden** (vier Entscheide in 12.8) · Grundlage: personakit `v0.3.0` (`personakit.probe`, `docs/PROBE.md`, `probe/kalibrierung/`).
+
+### 12.1 Frage
+
+personakit 0.3.0 hat eine Collapse-Probe: `probe build` erzeugt Testfragen und Simulate-Prompts, ein externer Runner holt die Antworten, `probe evaluate` vergleicht sie paarweise und vergibt eine Ampel. Der Server bietet bisher `persona_prompt(mode=simulate)` an, sagt aber nicht, ob die Simulation einer Persona je geprüft wurde. Soll er das, und welchen Teil der Probe?
+
+### 12.2 Was der Server nicht anbieten soll
+
+- **Antworten erzeugen oder in der Session beantworten lassen.** Die Methode verlangt pro Persona, Frage und Durchgang ein frisches Gespräch ohne Vorgeschichte. Beantwortet die laufende Session die Fragen für alle Personas, teilen alle Antworten denselben Kontext. Das erzeugt genau den Collapse, den die Probe messen soll, oder verdeckt ihn. Sampling (S2) ist nicht gebaut. Auch mit Sampling wären Modell und Kosten des Clients unbekannt, und ein Lauf umfasst rund 330 Aufrufe, also keinen Tool-Aufruf.
+- **`probe build` als Tool.** Der Server schreibt nie. Den Plan nur zurückzugeben (48 KB für vier Personas) nützt allein einem externen Runner, und der ruft ohnehin die CLI auf. Ein Plan im Kontext lädt zudem dazu ein, die Fragen in der Session zu beantworten (siehe oben).
+- **Schwellen als Parameter.** Die Schwellen sind kalibriert (`probe/kalibrierung/`). Wer sie verschiebt, betreibt Analyse; dafür ist die CLI da.
+
+### 12.3 Vorschlag: `probe_status` (lesend)
+
+Ein Tool wertet vorhandene Probe-Läufe aus. Es sagt pro Persona und Paar, ob für den **aktuellen** Stand der Persona eine Probe vorliegt und mit welchem Ergebnis. Es misst nichts Neues, es liest ab.
+
+| Parameter | Bedeutung |
+|---|---|
+| `set?` | nur Läufe, deren Plan dieses Set nennt; weglassen = alle Läufe |
+| `id?` | nur Paare mit dieser Persona; weglassen = alle Paare |
+
+Annotationen wie bei den übrigen Tools: read-only, idempotent, closed-world.
+
+**Quelle:** neue, optionale Variable `PERSONAKIT_PROBE_DIR`. Fehlt sie, meldet das Tool «nicht konfiguriert» samt Abhilfe. Der Server rät keinen Ort wie `../probe`, weil Probe-Ordner frei liegen (Regel 1: Weggelassenes gilt nicht).
+
+**Auffinden:** alle `*.json` unter `PERSONAKIT_PROBE_DIR`, ohne Symlinks nach aussen:
+- Pläne erkennt das Tool am Schlüssel `personakit_probe`, Antworten an `personakit_probe_answers`.
+- Gepaart wird über `plan_id`, nicht über den Dateinamen.
+- `probe-keywords.yml` im Ordner des Plans gilt für dessen Läufe.
+- Antworten ohne passenden Plan, Pläne ohne Antworten und ungültige Dateien stehen unter `problems`.
+
+**Aktualität: der Kern des Vorschlags.** Pro Persona im Plan vergleicht das Tool den Prompt im Plan mit `render(p, "prompt", mode="simulate")` der heutigen Datei:
+- `aktuell`: Der Prompt ist identisch.
+- `veraltet`: Die Persona existiert, der Prompt weicht ab, etwa wegen einer neuen Version, eines geänderten Renderers oder weil der Plan absichtlich verwaschen ist.
+- `unbekannt`: Die Persona gibt es im Workspace nicht.
+
+Nur Paare, deren beide Personas aktuell sind, zählen als Aussage über den heutigen Stand.
+
+Die **Version allein reicht nicht**. Das zeigen die Kalibrierungspläne in personakit: Sie tragen die echten Persona-IDs und die echten Versionen (zum Beispiel `eltern-neu-in-zuerich` 1.1.0), haben aber absichtlich ausgedünnte Prompts. Ein Abgleich nur über die Version hätte Stufe 3 («6 × rot») als Befund über die echten Personas gemeldet. Mit dem Prompt-Vergleich gilt `probe/beispiel/` als aktuell (4 von 4) und alle Kalibrierungsstufen als veraltet (je 0 von 4). Das ist am heutigen personakit-`main` nachgeprüft.
+
+**Ergebnis** (strukturiert und als Markdown, kompakt statt des vollen Berichts, der pro Lauf rund 17 KB JSON umfasst):
+- **Pro Lauf:**
+  - Plan- und Antwortdatei (relativ), `model`, `samples`, `generator`
+  - Aktualität pro Persona
+  - bei aktuellen Läufen die Paare (`a`, `b`, `light`, `nearness`, `mean`) und die WARN-Befunde (Q-Codes)
+  - veraltete Läufe nur mit Grund (welche Persona, Version im Plan gegenüber heute), ohne Paare
+- **Pro Persona:** die Ampel ihrer aktuellen Paare je Modell. Läufe verschiedener Modelle werden nicht vermischt.
+- **`limits`:** der Grenzen-Text aus personakit, unverändert.
+
+**Laufzeit:** Eine Auswertung dauert 0.4–0.5 s pro Lauf (330 Antworten, gemessen). Veraltete Läufe werden vor der Auswertung aussortiert, weil der Plan allein dafür reicht. Der Server bleibt damit zustandslos: kein Cache, jeder Aufruf liest neu. Für `probe/beispiel/` wären das rund 1 s.
+
+### 12.4 Datentreue (mcp-data-fidelity)
+
+- **Leermengen tragen einen `hint`:**
+  - Kein Lauf: «Für Set ‹x› liegt keine Probe vor: `personakit probe build personas/x -o probe.json`, Antworten mit einem eigenen Runner, Ordner unter `PERSONAKIT_PROBE_DIR` ablegen.»
+  - Nur veraltete Läufe: «Probe vorhanden, aber für ‹id› 1.0.0; heute 1.1.0. Neu bauen und neu laufen lassen.»
+- **Kein Lauf heisst nie grün.** Die Beschreibung sagt, was Grün bedeutet und was nicht. Aus der Kalibrierung:
+  - Grün heisst inhaltlich unterscheidbar, nicht «Stimme gehalten». Stufe «ohne Stimme» bleibt bei Haiku und Sonnet grün.
+  - Die Wortähnlichkeit ist ein grober Ersatz.
+  - Die Schwellen sind an einer Domäne und zwei Modellen gewählt.
+- **Keine Beschreibung erklärt eine Leermenge.** Sätze wie «no runs usually means the personas are fine» sind verboten; das prüft ein Test wie bei den übrigen Descriptions.
+
+### 12.5 Parität und Schritt 0 in personakit
+
+Regel des Repos: Fehlt etwas in personakit, wird es dort ergänzt, nicht hier nachgebaut. Heute fehlen zwei Dinge:
+
+1. **Auffinden, Paaren und Aktualität** gibt es in personakit nicht. Neu wäre `personakit.api.probe_status(probe_dir, workspace) -> ProbeStatus` (Läufe, Aktualität, Auswertung der aktuellen Läufe, `problems`).
+2. **Ein CLI-Gegenstück als Paritätsreferenz:** `personakit probe status <personas> <probe-dir> [--json]`. Ohne CLI-Befehl gäbe es nichts, woran die Paritätstests den Server messen können. Für Teams ohne MCP ist der Befehl auch für sich nützlich, etwa in CI: «Probe veraltet seit Version 1.1.0».
+
+Das Format bleibt `personakit_probe` 1.0: Der Prompt steht schon im Plan, ein zusätzlicher Hash ist nicht nötig. Ein geänderter Renderer in einer späteren personakit-Version macht alle alten Pläne veraltet. Das ist richtig so, denn das Modell hat dann einen anderen Prompt gesehen als den, den die Session heute bekäme.
+
+Tests im Server:
+- `probe_status` == `personakit probe status --json` auf den Fixtures
+- Fixtures: `probe/beispiel/` (aktuell) und eine Kalibrierungsstufe (veraltet) aus personakit `v0.3.0`; die Antworten sind synthetisch und ohne Personendaten
+- fehlende Variable, leerer Ordner, Antwort ohne Plan, Symlink nach aussen
+- Hash-Test des Verzeichnisses vor und nach dem Aufruf (`test_server_never_writes`)
+
+### 12.6 Bezug zu den bestehenden Tools
+
+- `get_persona` und `persona_prompt` bleiben unverändert (Parität mit `personakit render`).
+- Die Beschreibung von `persona_prompt` erhält einen Satz: «Whether this persona's simulation has been probed for collapse, and against which version, is reported by `probe_status`.» Sie sagt nichts über das Ergebnis.
+- Optional ein Feld `probe` in `list_personas` (siehe 12.8, Punkt 4).
+
+### 12.7 Risiken
+
+- **Scheinsicherheit:** Eine grüne Ampel im Tool-Ergebnis wirkt endgültiger als im Bericht, der zuerst die Grenzen nennt. Gegenmittel:
+  - `limits` steht im Ergebnis vor den Paaren.
+  - Die Persona-Zusammenfassung heisst «geprüft auf Collapse», nicht «valide».
+- **Antwortdateien sind gross** (rund 0.5 MB pro Lauf). Der Server liest sie, gibt aber nur Zahlen und Befunde zurück, keine Antworttexte und keine Auszüge. Die Auszüge im Markdown-Bericht bleiben der CLI vorbehalten.
+- **Interne Probe-Ordner:** `PERSONAKIT_PROBE_DIR` kann echte Läufe zu internen Personas enthalten. Es gelten dieselben Regeln wie bei `PERSONAKIT_DIR`: nur stdio, nur lesen, nichts ausserhalb des Ordners.
+
+### 12.8 Offene Entscheide
+
+1. **Umfang:** nur `probe_status` (Empfehlung) oder zusätzlich ein Tool, das den Plan zurückgibt (12.2: abgeraten)?
+2. **Ort der Läufe:** eigene Variable `PERSONAKIT_PROBE_DIR` (Empfehlung) oder eine feste Konvention neben `PERSONAKIT_DIR`?
+3. **Schritt 0 zuerst in personakit:** `api.probe_status` und `personakit probe status` als eigener PR und Release `v0.4.0`, danach der Server (Empfehlung). Die Alternative wäre Logik nur im Server und verstösst gegen die Paritätsregel.
+4. **Feld `probe` in `list_personas`:** Die letzte aktuelle Ampel pro Persona wäre bequem, macht `list_personas` aber langsamer (Auswertung bei jedem Aufruf) und rückt eine Ampel neben Status und Evidenz, wo sie wie ein Qualitätssiegel gelesen wird. Empfehlung: nicht jetzt; erst nach Erfahrung mit `probe_status`.
