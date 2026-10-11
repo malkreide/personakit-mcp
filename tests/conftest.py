@@ -1,4 +1,4 @@
-"""Fixtures: a writable copy of the synthetic example personas from personakit v0.2.0."""
+"""Fixtures: a writable copy of the synthetic example personas from personakit v0.3.0."""
 
 import shutil
 from pathlib import Path
