@@ -22,8 +22,9 @@ dependencies = [
   "mcp>=2.0,<3",
   "pydantic>=2.12",
   # personakit is not on PyPI yet, hence the Git pin – which also keeps personakit-mcp off PyPI for now
-  # (PyPI rejects direct URL dependencies; see .github/repo-meta.yml). v0.2.0 = 75f45e2, first with personakit.api.
-  "personakit @ git+https://github.com/malkreide/personakit@v0.2.0",
+  # (PyPI rejects direct URL dependencies; see .github/repo-meta.yml). v0.2.0 = 75f45e2, first with personakit.api;
+  # v0.3.0 = 5dadb0a adds journeys, Notion export and the collapse probe – nothing this server uses changed.
+  "personakit @ git+https://github.com/malkreide/personakit@v0.3.0",
 ]
 
 [project.optional-dependencies]

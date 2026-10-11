@@ -132,4 +132,4 @@ personakit-mcp/
 - **Rückwärtskompatibilität am Draht:** Das SDK (`mcp` 2.x) beantwortet neben `server/discover` auch den alten `initialize`-Handshake. Clients auf `2025-11-25` verbinden sich deshalb ebenfalls; `tests/test_protocol.py` prüft beide Wege.
 - **Fehler in Prompts:** Prompts kennen kein `isError`-Ergebnis. Erwartete Fehler (unbekannte ID, Konfiguration) gehen als JSON-RPC-Fehler `-32602` mit der Meldung hinaus, nicht als generischer `-32603`.
 - **Listen-Results:** Die Tools liefern Markdown als Text und das Modell als `structuredContent` (mit `outputSchema`); `ttlMs` und `cacheScope: public` auf `tools/list`, `prompts/list` und `server/discover`. `subscriptions/listen` wird nicht angeboten, weil es nichts zu melden gibt.
-- **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.2.0`, weil das personakit-Paket die Beispiele nicht mitliefert.
+- **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.3.0` (unverändert seit `v0.2.0`), weil das personakit-Paket die Beispiele nicht mitliefert.

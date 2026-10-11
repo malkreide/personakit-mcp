@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Read-only MCP server for a personakit folder (`PERSONAKIT_DIR`), protocol `2026-07-28`, stdio, built on `mcp>=2.0,<3` and personakit `v0.2.0` (`personakit.api`)
+- Read-only MCP server for a personakit folder (`PERSONAKIT_DIR`), protocol `2026-07-28`, stdio, built on `mcp>=2.0,<3` and personakit `v0.3.0` (`personakit.api`; fixtures are its synthetic example personas)
 - Tools `list_sets`, `list_personas` (filters `set`, `status`, `priority`), `get_persona` (`md`, `card`, `json`, `prompt`), `persona_prompt` (`mode` required) and `lint_personas`; all annotated read-only, idempotent and closed-world
 - Prompts `persona_audience` and `persona_simulate` as selectable presets
 - Descriptions explain `proto` and mark `simulate` output as a hypothesis, never user research
