@@ -85,3 +85,79 @@ class LintResult(BaseModel):
     infos: int
     findings: list[LintFinding]
     summary: str
+
+
+# ------------------------------------------------------------------ probe_status (personakit probe status --json)
+class ProbePersonaRun(BaseModel):
+    answers: str = Field(description="Answers file of the run, relative to PERSONAKIT_PROBE_DIR")
+    model: str = Field(description="Model as recorded in the answers file")
+    light: str = Field(description="Worst light of this persona's current pairs in the run: red, yellow or green")
+    current_pairs: int = Field(description="Pairs with another current persona that count")
+
+
+class ProbeStale(BaseModel):
+    answers: str
+    reason: str = Field(description="Why the run says nothing about today's persona")
+
+
+class ProbePersona(BaseModel):
+    id: str
+    version: str = Field(description="Today's version")
+    light: str | None = Field(description="Worst light over all current runs; null when no current run exists")
+    runs: list[ProbePersonaRun] = Field(description="Current runs, one entry per run (models are not merged)")
+    stale: list[ProbeStale] = Field(description="Runs with this persona that do not match today's file")
+
+
+class ProbeRunPersona(BaseModel):
+    id: str
+    plan_version: str
+    version: str | None = Field(description="Today's version; null when the persona is not in PERSONAKIT_DIR")
+    state: str = Field(description="current (same simulate prompt as today), stale or unknown")
+    reason: str
+
+
+class ProbePair(BaseModel):
+    a: str
+    b: str
+    light: str = Field(description="red, yellow, green or none")
+    nearness: float | None = Field(description="Similarity between / similarity within (two or more samples)")
+    mean: float | None = Field(description="Mean TF-IDF cosine of the answers to the same questions")
+    current: bool = Field(description="Both personas current; only these pairs count")
+
+
+class ProbeRunFinding(BaseModel):
+    level: str
+    code: str = Field(description="Q code from personakit docs/FORMAT.md")
+    subject: str
+    message: str
+
+
+class ProbeRun(BaseModel):
+    plan: str
+    answers: str
+    keywords: str | None
+    plan_id: str
+    generator: str | None
+    model: str | None
+    samples: int
+    sets: list[str]
+    state: str = Field(description="current (all personas current), partial (at least two) or stale (not evaluated)")
+    personas: list[ProbeRunPersona]
+    pairs: list[ProbePair]
+    findings: list[ProbeRunFinding] = Field(description="WARN findings of the evaluation")
+
+
+class ProbeProblem(BaseModel):
+    path: str
+    message: str
+
+
+class ProbeStatusResult(BaseModel):
+    generator: str
+    limits: list[str] = Field(description="Limits of the method; read them before reporting a light")
+    probe_dir: str
+    filters: dict[str, str | None] = Field(description="Applied filters; null = not applied")
+    hint: str | None = Field(description="Concrete next step when nothing in scope has a current probe")
+    personas: list[ProbePersona]
+    runs: list[ProbeRun]
+    problems: list[ProbeProblem] = Field(description="Skipped probe files and unusable persona files")

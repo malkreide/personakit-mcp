@@ -78,6 +78,7 @@ Then, for example: *«Which persona is primary for the Schuleintritt solution? L
 | `get_persona` | One persona as `md`, `card`, `json` or `prompt` (`mode` only for `prompt`, default `simulate`) – identical to `personakit render` |
 | `persona_prompt` | Prompt block of one persona; `mode` (`simulate` or `audience`) is required |
 | `lint_personas` | personakit's method checks for the folder or one persona (and its sets) – identical to `personakit lint --json` |
+| `probe_status` | Which collapse-probe runs in `PERSONAKIT_PROBE_DIR` still match today's personas (simulate prompt compared, not just the version), the light per persona and pair from the current runs, stale runs with the reason; optional `set`, `id` – identical to `personakit probe status --json`. Green means distinguishable wording, not «voice kept» or «validated»; no answer texts |
 
 | Prompt | Description |
 |---|---|
@@ -91,6 +92,7 @@ All tools are annotated `readOnlyHint: true`, `destructiveHint: false`, `idempot
 | Variable | Required | Meaning |
 |---|---|---|
 | `PERSONAKIT_DIR` | yes | Folder with `*.persona.md` files, searched recursively (typically `personas/` of a personakit repository) |
+| `PERSONAKIT_PROBE_DIR` | no | Folder with collapse-probe plans and answer files, searched recursively (typically `probe/` of a personakit repository); only `probe_status` reads it and reports an error without it |
 
 If the variable is missing or points to the wrong place, the server still starts and every tool returns a message that says what to fix. One folder per server entry; register the server twice for two folders. Files that resolve outside the folder (symlinks) are not read.
 
@@ -105,7 +107,7 @@ personakit-mcp/
 │   ├── service.py        # read-only view on the folder: filters, lookups, messages (no MCP)
 │   └── models.py         # structured results (outputSchema)
 ├── tests/                # parity with the personakit CLI, fidelity, read-only, protocol probe
-│   └── fixtures/personas # synthetic example personas from personakit v0.3.0
+│   └── fixtures/         # personas/ and probe/: synthetic examples and two probe runs from personakit v0.4.0
 ├── evaluations/          # 10 questions for an LLM evaluation (mcp-builder)
 ├── docs/DESIGN.md        # design note and decisions
 ├── server.json           # MCP registry metadata

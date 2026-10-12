@@ -15,8 +15,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from personakit.api import Problem, Workspace, lint_workspace, load_workspace_tolerant
+from personakit.api import probe_status as _probe_status
 from personakit.lint import ERROR, INFO, WARN, Finding, sort_findings
 from personakit.model import SUFFIX, Persona, PersonaError
+from personakit.probe_status import render_status, status_json
 from personakit.render import render
 from personakit.sets import LOOSE_TITLE, Group, build_groups
 from personakit.validate import load_schema
@@ -27,6 +29,7 @@ from .models import (
     Membership,
     PersonaList,
     PersonaSummary,
+    ProbeStatusResult,
     ProblemInfo,
     SetInfo,
     SetList,
@@ -34,6 +37,7 @@ from .models import (
 )
 
 ENV_VAR = "PERSONAKIT_DIR"
+PROBE_ENV_VAR = "PERSONAKIT_PROBE_DIR"
 FORMATS = ("md", "card", "json", "prompt")
 MODES = ("simulate", "audience")
 
@@ -62,6 +66,22 @@ def resolve_root(env: dict[str, str] | None = None) -> Path:
             "Ist es der richtige Ordner, z. B. personas/ eines personakit-Repos?"
         )
     return root.resolve()
+
+
+def resolve_probe_dir(env: dict[str, str] | None = None) -> Path:
+    """The configured folder with probe runs (optional), or a ServiceError that says how to configure it."""
+    raw = (env if env is not None else os.environ).get(PROBE_ENV_VAR, "").strip()
+    if not raw:
+        raise ServiceError(
+            f"{PROBE_ENV_VAR} ist nicht gesetzt: Ohne diesen Ordner kann der Server nicht sagen, ob eine Persona "
+            "auf Collapse geprüft ist – das heisst nicht, dass sie geprüft ist. In der MCP-Konfiguration den Ordner "
+            f"mit Probe-Plänen und Antwortdateien angeben, z. B. env: {{{PROBE_ENV_VAR}: /pfad/zu/probe}}."
+        )
+    path = Path(raw).expanduser()
+    if not path.is_dir():
+        what = "ist eine Datei, kein Ordner" if path.exists() else "Ordner existiert nicht"
+        raise ServiceError(f"{PROBE_ENV_VAR}={raw}: {what}. Pfad in der MCP-Konfiguration prüfen.")
+    return path.resolve()
 
 
 @dataclass
@@ -321,3 +341,19 @@ def lint(root: Path, snap: Snapshot, pid: str | None = None) -> LintResult:
         findings=rows,
         summary=summary,
     )
+
+
+def probe_status(
+    snap: Snapshot, probe_dir: Path, set_id: str | None = None, pid: str | None = None
+) -> tuple[ProbeStatusResult, str]:
+    """``personakit probe status <root> <probe_dir> --json`` and its Markdown, for the probe_status tool."""
+    if set_id is not None and set_id not in _set_ids(snap):
+        known = ", ".join(_set_ids(snap)) or "keine (es gibt keine set.yml)"
+        raise ServiceError(f"Unbekanntes Set «{set_id}». Vorhandene Sets: {known}. list_sets zeigt Details.")
+    if pid is not None:
+        find(snap, pid)  # same errors and suggestions as get_persona
+    try:
+        st = _probe_status([snap.root], probe_dir, set_id=set_id, persona_id=pid)
+    except PersonaError as e:
+        raise ServiceError(str(e)) from e
+    return ProbeStatusResult.model_validate(status_json(st)), render_status(st)

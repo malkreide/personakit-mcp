@@ -16,7 +16,7 @@ from personakit_mcp.server import mcp
 
 pytestmark = pytest.mark.anyio
 
-TOOLS = ["list_sets", "list_personas", "get_persona", "persona_prompt", "lint_personas"]
+TOOLS = ["list_sets", "list_personas", "get_persona", "persona_prompt", "lint_personas", "probe_status"]
 ALL_IDS = [
     "eltern-neu-in-zuerich",
     "lehrperson-ki-explorierend",
@@ -59,7 +59,7 @@ async def test_tools_list_is_read_only_cached_and_ordered(root):
             False,
         )
     schemas = {t.name: t.output_schema for t in result.tools}
-    assert schemas["list_personas"] and schemas["list_sets"] and schemas["lint_personas"]
+    assert schemas["list_personas"] and schemas["list_sets"] and schemas["lint_personas"] and schemas["probe_status"]
 
 
 async def test_descriptions_explain_proto_and_simulate():
