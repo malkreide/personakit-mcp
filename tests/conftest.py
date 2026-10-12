@@ -1,4 +1,4 @@
-"""Fixtures: a writable copy of the synthetic example personas from personakit v0.3.0."""
+"""Fixtures: writable copies of the synthetic example personas and two probe runs from personakit v0.4.0."""
 
 import shutil
 from pathlib import Path
@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures" / "personas"
+PROBE_FIXTURES = Path(__file__).parent / "fixtures" / "probe"
 ELTERN = "elternkommunikation-schuleintritt"
 KI = "ki-leitplanken-lehrpersonen"
 
@@ -34,3 +35,12 @@ def broken(root: Path) -> Path:
     (root / "defektes-set").mkdir()
     (root / "defektes-set" / "set.yml").write_text("- keine\n- mapping\n", encoding="utf-8")
     return root
+
+
+@pytest.fixture
+def probe(root: Path, tmp_path: Path, monkeypatch) -> Path:
+    """probe/beispiel (current) and calibration stage 3 (same ids and versions, thinned prompts) as PERSONAKIT_PROBE_DIR."""
+    dst = tmp_path / "probe"
+    shutil.copytree(PROBE_FIXTURES, dst)
+    monkeypatch.setenv("PERSONAKIT_PROBE_DIR", str(dst))
+    return dst

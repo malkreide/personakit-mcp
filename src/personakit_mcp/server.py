@@ -17,8 +17,8 @@ from mcp.types import INVALID_PARAMS, CallToolResult, TextContent, ToolAnnotatio
 from pydantic import BaseModel, Field
 
 from . import __version__, service
-from .models import LintResult, PersonaList, ProblemInfo, SetList
-from .service import ENV_VAR, ServiceError
+from .models import LintResult, PersonaList, ProbeStatusResult, ProblemInfo, SetList
+from .service import ENV_VAR, PROBE_ENV_VAR, ServiceError
 
 EVIDENCE = (
     "`evidence_level` tells how far a persona is grounded: `proto` = assembled from team assumptions in a "
@@ -33,12 +33,16 @@ SIMULATE = (
     "copy, FAQ)."
 )
 READ_ONLY = f"Read-only: reads the folder in {ENV_VAR} on every call and never writes."
+PROBED = (
+    "Whether this persona's simulation has been probed for collapse, and against which version, is reported "
+    "by `probe_status`."
+)
 
 INSTRUCTIONS = f"""personakit-mcp serves evidence-based personas (personakit format) from one local folder.
 
 Start with `list_sets` (which solutions exist, which persona is primary there), then `list_personas`
 to filter, then `get_persona` or `persona_prompt` for one persona. `lint_personas` shows the method
-checks. {READ_ONLY} Personas are edited in Git with the personakit CLI, not through this server.
+checks; `probe_status` shows whether existing collapse-probe runs still match today's personas. {READ_ONLY} Personas are edited in Git with the personakit CLI, not through this server.
 
 {EVIDENCE}
 
@@ -191,7 +195,7 @@ def get_persona(
     description=(
         "Return the prompt block of one persona, to use as a preset for the rest of the conversation. `mode` "
         "is required, so the choice between simulating the persona and writing for it is made on purpose. "
-        f"{SIMULATE} {EVIDENCE} {READ_ONLY}"
+        f"{SIMULATE} {PROBED} {EVIDENCE} {READ_ONLY}"
     ),
 )
 def persona_prompt(
@@ -231,6 +235,41 @@ def lint_personas(
             ctx = " › ".join(x for x in (f.set, f.persona) if x)
             lines.append(f"- {f.level} {f.code}" + (f" [{ctx}]" if ctx else "") + f" {f.message}")
     return _structured(result, "\n".join(lines) + "\n")
+
+
+@mcp.tool(
+    name="probe_status",
+    title="Collapse-probe status",
+    annotations=ANNOTATIONS,
+    description=(
+        "Report which collapse-probe runs exist for the personas and whether they still match today's files, "
+        f"identical to `personakit probe status <{ENV_VAR}> <{PROBE_ENV_VAR}> --json`. A run was made earlier "
+        "outside this server (`personakit probe build`, an external model runner with one fresh conversation per "
+        "answer, `personakit probe evaluate`); this tool only reads plans and answers below "
+        f"{PROBE_ENV_VAR} and never asks a model. Per persona in a run it compares the simulate prompt stored in "
+        "the plan with today's: `current`, `stale` (with the reason, e.g. another version) or `unknown`. Only "
+        "pairs of two current personas count; stale runs are not evaluated. Per persona: the worst light of its "
+        "current pairs per run (red, yellow, green); runs of different models are kept apart. Green means the "
+        "simulated answers differ in wording; it does not mean the persona keeps its voice or is accurate, and "
+        "it is no evidence about real users – read `limits` before reporting a light. A persona without a "
+        "current run has not been checked: say so, never call it checked. No answer texts are returned. `set` "
+        "and `id` are optional; an omitted filter is not applied. Skipped files are listed under `problems`; "
+        f"when nothing in scope has a current probe, `hint` names the next step. Read-only: reads {ENV_VAR} and "
+        f"{PROBE_ENV_VAR} on every call and never writes."
+    ),
+)
+def probe_status(
+    set: Annotated[
+        str | None, Field(description="Set id from list_sets: runs whose plan names this set, and its personas")
+    ] = None,
+    id: Annotated[str | None, Field(description="Persona id: runs with this persona and only its pairs")] = None,
+) -> Annotated[CallToolResult, ProbeStatusResult]:
+    snap = _snapshot()
+    try:
+        result, markdown = service.probe_status(snap, service.resolve_probe_dir(), set_id=set, pid=id)
+    except ServiceError as e:
+        raise ToolError(str(e)) from e
+    return _structured(result, markdown)
 
 
 # ------------------------------------------------------------------ prompts

@@ -76,6 +76,7 @@ Danach zum Beispiel: *«Welche Persona ist für die Lösung Schuleintritt primä
 | `get_persona` | Eine Persona als `md`, `card`, `json` oder `prompt` (`mode` nur bei `prompt`, Default `simulate`) – identisch mit `personakit render` |
 | `persona_prompt` | Prompt-Block einer Persona; `mode` (`simulate` oder `audience`) ist Pflicht |
 | `lint_personas` | Methodik-Prüfungen von personakit für den Ordner oder eine Persona (und ihre Sets) – identisch mit `personakit lint --json` |
+| `probe_status` | Welche Collapse-Probe-Läufe in `PERSONAKIT_PROBE_DIR` noch zum heutigen Stand der Personas passen (Simulate-Prompt verglichen, nicht nur die Version), Ampel pro Persona und Paar aus den aktuellen Läufen, veraltete Läufe mit Grund; optional `set`, `id` – identisch mit `personakit probe status --json`. Grün heisst unterscheidbare Wortwahl, nicht «Stimme gehalten» oder «validiert»; keine Antworttexte |
 
 | Prompt | Beschreibung |
 |---|---|
@@ -89,6 +90,7 @@ Alle Tools tragen `readOnlyHint: true`, `destructiveHint: false`, `idempotentHin
 | Variable | Pflicht | Bedeutung |
 |---|---|---|
 | `PERSONAKIT_DIR` | ja | Ordner mit `*.persona.md`-Dateien, rekursiv durchsucht (typisch `personas/` eines personakit-Repos) |
+| `PERSONAKIT_PROBE_DIR` | nein | Ordner mit Plänen und Antwortdateien der Collapse-Probe, rekursiv durchsucht (typisch `probe/` eines personakit-Repos); nur `probe_status` liest ihn und meldet ohne ihn einen Fehler |
 
 Fehlt die Variable oder zeigt sie an den falschen Ort, startet der Server trotzdem, und jedes Tool liefert eine Meldung, was zu korrigieren ist. Ein Ordner pro Server-Eintrag; für zwei Ordner den Server zweimal eintragen. Dateien, die ausserhalb des Ordners liegen (Symlinks), werden nicht gelesen.
 
@@ -103,7 +105,7 @@ personakit-mcp/
 │   ├── service.py        # lesende Sicht auf den Ordner: Filter, Suche, Meldungen (ohne MCP)
 │   └── models.py         # strukturierte Ergebnisse (outputSchema)
 ├── tests/                # Parität mit der personakit-CLI, Datentreue, read-only, Protokoll-Probe
-│   └── fixtures/personas # synthetische Beispiel-Personas aus personakit v0.3.0
+│   └── fixtures/         # personas/ und probe/: synthetische Beispiele und zwei Probe-Läufe aus personakit v0.4.0
 ├── evaluations/          # 10 Fragen für eine LLM-Evaluation (mcp-builder)
 ├── docs/DESIGN.md        # Design-Notiz und Entscheide
 ├── server.json           # Metadaten für die MCP-Registry
