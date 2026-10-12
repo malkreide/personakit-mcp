@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `docs/DESIGN.md` §12: design draft for a read-only `probe_status` tool (open, four decisions pending): reads existing collapse-probe runs from an optional `PERSONAKIT_PROBE_DIR`, judges each run current or stale by comparing the plan's simulate prompt with today's (the version alone does not separate real from washed-out calibration runs), needs `personakit probe status` in personakit first as the parity reference
+- `docs/DESIGN.md` §12: design for a read-only `probe_status` tool (accepted 2026-10-12, all four decisions as recommended): reads existing collapse-probe runs from an optional `PERSONAKIT_PROBE_DIR`, judges each run current or stale by comparing the plan's simulate prompt with today's (the version alone does not separate real from washed-out calibration runs), needs `personakit probe status` in personakit first as the parity reference
 - Read-only MCP server for a personakit folder (`PERSONAKIT_DIR`), protocol `2026-07-28`, stdio, built on `mcp>=2.0,<3` and personakit `v0.3.0` (`personakit.api`; fixtures are its synthetic example personas)
 - Tools `list_sets`, `list_personas` (filters `set`, `status`, `priority`), `get_persona` (`md`, `card`, `json`, `prompt`), `persona_prompt` (`mode` required) and `lint_personas`; all annotated read-only, idempotent and closed-world
 - Prompts `persona_audience` and `persona_simulate` as selectable presets

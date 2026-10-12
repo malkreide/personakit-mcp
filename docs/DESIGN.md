@@ -134,9 +134,9 @@ personakit-mcp/
 - **Listen-Results:** Die Tools liefern Markdown als Text und das Modell als `structuredContent` (mit `outputSchema`); `ttlMs` und `cacheScope: public` auf `tools/list`, `prompts/list` und `server/discover`. `subscriptions/listen` wird nicht angeboten, weil es nichts zu melden gibt.
 - **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.3.0` (unverändert seit `v0.2.0`), weil das personakit-Paket die Beispiele nicht mitliefert.
 
-## 12 Entwurf: Probe-Tool (offen)
+## 12 Probe-Tool `probe_status`
 
-Stand 2026-10-11 · Status: **Entwurf, nicht entschieden** (vier Entscheide in 12.8) · Grundlage: personakit `v0.3.0` (`personakit.probe`, `docs/PROBE.md`, `probe/kalibrierung/`).
+Stand 2026-10-12 · Status: **angenommen** (alle vier Entscheide wie empfohlen, siehe 12.8; Entwurf vom 2026-10-11) · Grundlage: personakit `v0.3.0` (`personakit.probe`, `docs/PROBE.md`, `probe/kalibrierung/`).
 
 ### 12.1 Frage
 
@@ -200,9 +200,9 @@ Die **Version allein reicht nicht**. Das zeigen die Kalibrierungspläne in perso
 
 ### 12.5 Parität und Schritt 0 in personakit
 
-Regel des Repos: Fehlt etwas in personakit, wird es dort ergänzt, nicht hier nachgebaut. Heute fehlen zwei Dinge:
+Regel des Repos: Fehlt etwas in personakit, wird es dort ergänzt, nicht hier nachgebaut. Zum Zeitpunkt des Entwurfs fehlten zwei Dinge (beide in malkreide/personakit#21 umgesetzt):
 
-1. **Auffinden, Paaren und Aktualität** gibt es in personakit nicht. Neu wäre `personakit.api.probe_status(probe_dir, workspace) -> ProbeStatus` (Läufe, Aktualität, Auswertung der aktuellen Läufe, `problems`).
+1. **Auffinden, Paaren und Aktualität** gibt es in personakit nicht. Umgesetzt als `personakit.api.probe_status(paths, probe_dir, set_id=…, persona_id=…) -> ProbeStatus` (Läufe, Aktualität, Auswertung der aktuellen Läufe, `problems`, `hint`; JSON über `personakit.probe_status.status_json`).
 2. **Ein CLI-Gegenstück als Paritätsreferenz:** `personakit probe status <personas> <probe-dir> [--json]`. Ohne CLI-Befehl gäbe es nichts, woran die Paritätstests den Server messen können. Für Teams ohne MCP ist der Befehl auch für sich nützlich, etwa in CI: «Probe veraltet seit Version 1.1.0».
 
 Das Format bleibt `personakit_probe` 1.0: Der Prompt steht schon im Plan, ein zusätzlicher Hash ist nicht nötig. Ein geänderter Renderer in einer späteren personakit-Version macht alle alten Pläne veraltet. Das ist richtig so, denn das Modell hat dann einen anderen Prompt gesehen als den, den die Session heute bekäme.
@@ -227,9 +227,9 @@ Tests im Server:
 - **Antwortdateien sind gross** (rund 0.5 MB pro Lauf). Der Server liest sie, gibt aber nur Zahlen und Befunde zurück, keine Antworttexte und keine Auszüge. Die Auszüge im Markdown-Bericht bleiben der CLI vorbehalten.
 - **Interne Probe-Ordner:** `PERSONAKIT_PROBE_DIR` kann echte Läufe zu internen Personas enthalten. Es gelten dieselben Regeln wie bei `PERSONAKIT_DIR`: nur stdio, nur lesen, nichts ausserhalb des Ordners.
 
-### 12.8 Offene Entscheide
+### 12.8 Entscheide (am 2026-10-12 bestätigt)
 
-1. **Umfang:** nur `probe_status` (Empfehlung) oder zusätzlich ein Tool, das den Plan zurückgibt (12.2: abgeraten)?
-2. **Ort der Läufe:** eigene Variable `PERSONAKIT_PROBE_DIR` (Empfehlung) oder eine feste Konvention neben `PERSONAKIT_DIR`?
-3. **Schritt 0 zuerst in personakit:** `api.probe_status` und `personakit probe status` als eigener PR und Release `v0.4.0`, danach der Server (Empfehlung). Die Alternative wäre Logik nur im Server und verstösst gegen die Paritätsregel.
-4. **Feld `probe` in `list_personas`:** Die letzte aktuelle Ampel pro Persona wäre bequem, macht `list_personas` aber langsamer (Auswertung bei jedem Aufruf) und rückt eine Ampel neben Status und Evidenz, wo sie wie ein Qualitätssiegel gelesen wird. Empfehlung: nicht jetzt; erst nach Erfahrung mit `probe_status`.
+1. **Umfang:** nur `probe_status`. Kein Tool, das den Plan zurückgibt (Begründung in 12.2).
+2. **Ort der Läufe:** eigene, optionale Variable `PERSONAKIT_PROBE_DIR`, keine feste Konvention.
+3. **Schritt 0 zuerst in personakit:** `personakit.api.probe_status` und `personakit probe status` als Paritätsreferenz, umgesetzt in malkreide/personakit#21; danach Release `v0.4.0` und der Server.
+4. **Kein Feld `probe` in `list_personas`** vorerst; erst nach Erfahrung mit `probe_status` neu prüfen.
