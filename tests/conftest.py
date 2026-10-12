@@ -1,4 +1,4 @@
-"""Fixtures: writable copies of the synthetic example personas and two probe runs from personakit v0.4.0."""
+"""Fixtures: writable copies of the synthetic example personas and two probe runs from personakit v0.5.0."""
 
 import shutil
 from pathlib import Path

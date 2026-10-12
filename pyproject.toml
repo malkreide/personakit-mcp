@@ -24,8 +24,9 @@ dependencies = [
   # personakit is not on PyPI yet, hence the Git pin – which also keeps personakit-mcp off PyPI for now
   # (PyPI rejects direct URL dependencies; see .github/repo-meta.yml). v0.2.0 = 75f45e2, first with personakit.api;
   # v0.3.0 = 5dadb0a adds journeys, Notion export and the collapse probe; v0.4.0 = feee331 adds
-  # personakit.api.probe_status, which the probe_status tool serves.
-  "personakit @ git+https://github.com/malkreide/personakit@v0.4.0",
+  # personakit.api.probe_status, which the probe_status tool serves; v0.5.0 = SHA_TBD corrects the
+  # probe limits text that probe_status passes on.
+  "personakit @ git+https://github.com/malkreide/personakit@v0.5.0",
 ]
 
 [project.optional-dependencies]

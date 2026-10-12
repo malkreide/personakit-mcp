@@ -105,7 +105,7 @@ personakit-mcp/
 │   ├── service.py        # lesende Sicht auf den Ordner: Filter, Suche, Meldungen (ohne MCP)
 │   └── models.py         # strukturierte Ergebnisse (outputSchema)
 ├── tests/                # Parität mit der personakit-CLI, Datentreue, read-only, Protokoll-Probe
-│   └── fixtures/         # personas/ und probe/: synthetische Beispiele und zwei Probe-Läufe aus personakit v0.4.0
+│   └── fixtures/         # personas/ und probe/: synthetische Beispiele und zwei Probe-Läufe aus personakit v0.5.0
 ├── evaluations/          # 10 Fragen für eine LLM-Evaluation (mcp-builder)
 ├── docs/DESIGN.md        # Design-Notiz und Entscheide
 ├── server.json           # Metadaten für die MCP-Registry
