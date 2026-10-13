@@ -107,7 +107,7 @@ personakit-mcp/
 │   ├── service.py        # read-only view on the folder: filters, lookups, messages (no MCP)
 │   └── models.py         # structured results (outputSchema)
 ├── tests/                # parity with the personakit CLI, fidelity, read-only, protocol probe
-│   └── fixtures/         # personas/ and probe/: synthetic examples and two probe runs from personakit v0.4.0
+│   └── fixtures/         # personas/ and probe/: synthetic examples and two probe runs from personakit v0.5.0
 ├── evaluations/          # 10 questions for an LLM evaluation (mcp-builder)
 ├── docs/DESIGN.md        # design note and decisions
 ├── server.json           # MCP registry metadata

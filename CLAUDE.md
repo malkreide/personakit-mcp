@@ -24,7 +24,7 @@ python scripts/validate_repo.py .
 - mcp-data-fidelity: Weggelassene Filter gelten nicht; Leermengen tragen einen konkreten `hint`; übersprungene Dateien stehen unter `problems`; keine Beschreibung erklärt eine Leermenge.
 - Tool-Beschreibungen Englisch; Meldungen im Ergebnis Deutsch in Schweizer Rechtschreibung (kein ß).
 - Tool-Namen im README = registrierte Namen.
-- Fixtures unter `tests/fixtures/personas` sind die synthetischen Beispiele aus personakit `v0.4.0`, unter `tests/fixtures/probe` der Haiku-Lauf aus `probe/beispiel/` und Kalibrierungsstufe 3; bei einem neuen personakit-Tag gemeinsam nachziehen.
+- Fixtures unter `tests/fixtures/personas` sind die synthetischen Beispiele aus personakit `v0.5.0`, unter `tests/fixtures/probe` der Haiku-Lauf aus `probe/beispiel/` und Kalibrierungsstufe 3; bei einem neuen personakit-Tag gemeinsam nachziehen.
 - Die SDK-Untergrenze bleibt auf einer Version, die `2026-07-28` spricht; `tests/test_protocol.py` prüft das am Draht.
 - `README.md` (EN) und `README.de.md` (DE) synchron halten; `mcp-name`-Marker nur in `README.md`, Anzahl vor und nach README-Änderungen vergleichen.
 - Conventional Commits. Unter Windows/PowerShell keine `&&`-Ketten.

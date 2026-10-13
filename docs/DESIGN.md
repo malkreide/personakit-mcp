@@ -132,7 +132,7 @@ personakit-mcp/
 - **Rückwärtskompatibilität am Draht:** Das SDK (`mcp` 2.x) beantwortet neben `server/discover` auch den alten `initialize`-Handshake. Clients auf `2025-11-25` verbinden sich deshalb ebenfalls; `tests/test_protocol.py` prüft beide Wege.
 - **Fehler in Prompts:** Prompts kennen kein `isError`-Ergebnis. Erwartete Fehler (unbekannte ID, Konfiguration) gehen als JSON-RPC-Fehler `-32602` mit der Meldung hinaus, nicht als generischer `-32603`.
 - **Listen-Results:** Die Tools liefern Markdown als Text und das Modell als `structuredContent` (mit `outputSchema`); `ttlMs` und `cacheScope: public` auf `tools/list`, `prompts/list` und `server/discover`. `subscriptions/listen` wird nicht angeboten, weil es nichts zu melden gibt.
-- **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.4.0` (unverändert seit `v0.2.0`), weil das personakit-Paket die Beispiele nicht mitliefert. Für `probe_status` kommen der Haiku-Lauf aus `probe/beispiel/` (aktuell) und Kalibrierungsstufe 3 (veraltet) dazu.
+- **Fixtures:** Die Tests laufen gegen eine Kopie der synthetischen Beispiel-Personas aus personakit `v0.5.0` (unverändert seit `v0.2.0`), weil das personakit-Paket die Beispiele nicht mitliefert. Für `probe_status` kommen der Haiku-Lauf aus `probe/beispiel/` (aktuell) und Kalibrierungsstufe 3 (veraltet) dazu.
 - **`probe_status` umgesetzt (§12):** Ergebnis = `personakit.probe_status.status_json`, Text = `render_status`; Parität mit `personakit probe status --json` mit und ohne Filter. Ohne `PERSONAKIT_PROBE_DIR` ist der Aufruf ein Fehler mit dem Satz, dass «nicht konfiguriert» nicht «geprüft» heisst. Unbekannte `id` liefert dieselben Vorschläge wie `get_persona`.
 
 ## 12 Probe-Tool `probe_status`
